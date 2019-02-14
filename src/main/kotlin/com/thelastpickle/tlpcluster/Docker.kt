@@ -20,10 +20,10 @@ class Docker(val context: Context) {
     fun buildContainer(dockerfileName : String, imageTag: String) : String {
 
         // The java-docker library we use can build an image from only a Dockerfile.
-        // That is, there is no programmatic way to build an image. So, we need to copy
-        // the dockerfile in the JAR resources to a location it can read from. To do this
-        // we will make a temporary file in the working directory that is removed after
-        // the tlp-cluster command completes.
+        // That is, there is no programmatic way to build an image using the API. So, we
+        // need to copy the dockerfile in the JAR resources to a location it can read from.
+        // To do this we will make a temporary file in the working directory that is
+        // removed after the tlp-cluster command completes.
         val dockerfileStream = object {}.javaClass.getResourceAsStream("commands/origin/$dockerfileName")
         val dockerfile = Utils.inputstreamToTempFile(dockerfileStream, dockerfileName + "_", "", context.cwdPath)
         val dockerBuildCallback = BuildImageResultCallback()
