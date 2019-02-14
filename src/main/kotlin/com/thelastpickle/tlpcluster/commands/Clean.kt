@@ -25,6 +25,7 @@ class Clean : ICommand {
             File(f).delete()
         }
         File(".terraform").deleteRecursively()
+        File("provisioning").deleteRecursively()
     }
 
 }
