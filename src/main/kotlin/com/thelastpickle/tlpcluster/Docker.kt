@@ -7,15 +7,19 @@ import com.github.dockerjava.api.model.Frame
 import com.github.dockerjava.api.model.Volume
 import com.github.dockerjava.core.command.AttachContainerResultCallback
 import com.github.dockerjava.core.command.BuildImageResultCallback
+import org.apache.logging.log4j.kotlin.logger
 import java.io.PipedOutputStream
 import java.io.PipedInputStream
 import kotlin.concurrent.thread
+
 
 
 class Docker(val context: Context) {
     init {
 
     }
+
+    val log = logger()
 
     fun buildContainer(dockerfileName : String, imageTag: String) : String {
 
@@ -105,6 +109,8 @@ class Docker(val context: Context) {
             do {
                 val message = stdOutReader.readLine()
                 println(message)
+                log.debug { "Received from stdout: $message" }
+
                 capturedStdOut.appendln(message)
             } while(true)
         }
