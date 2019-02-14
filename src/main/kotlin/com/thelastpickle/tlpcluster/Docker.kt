@@ -19,8 +19,6 @@ class Docker(val context: Context) {
 
     }
 
-    val log = logger()
-
     fun buildContainer(dockerfileName : String, imageTag: String) : String {
 
         // The java-docker library we use can build an image from only a Dockerfile.
@@ -75,6 +73,7 @@ class Docker(val context: Context) {
         }
 
         if (workingDirectory.isNotEmpty()) {
+            println("Setting working directory inside container to $workingDirectory")
             dockerCommandBuilder
                     .withWorkingDir(workingDirectory)
         }
@@ -108,8 +107,9 @@ class Docker(val context: Context) {
             println("Reading lines")
             do {
                 val message = stdOutReader.readLine()
-                println(message)
-                log.debug { "Received from stdout: $message" }
+                println("STDOUT:$message")
+//                log.debug { "Received from stdout: $message" }
+
 
                 capturedStdOut.appendln(message)
             } while(true)
@@ -124,6 +124,7 @@ class Docker(val context: Context) {
             }
         }
 
+        var framesRead = 0
         context.docker.attachContainerCmd(dockerContainer.id)
                 .withStdIn(stdInputPipeToContainer)
                 .withStdOut(true)
@@ -134,6 +135,7 @@ class Docker(val context: Context) {
                         // should only include standard out - please fix me
                         if(item != null && item.streamType.name.equals("STDOUT")) {
                             source.write(item.payload)
+                            framesRead++
                         }
                     }
 
@@ -149,10 +151,12 @@ class Docker(val context: Context) {
             containerState = context.docker.inspectContainerCmd(dockerContainer.id).exec().state
         } while (containerState.running == true)
 
-        println("Container exited with exit code ${containerState.exitCode}, ${containerState.error}")
+        println("Container exited with exit code ${containerState.exitCode}, ${containerState.error}, frames read: $framesRead")
 
-        outputThread.stop()
-        redirectStdInputThread.stop()
+        // let the threads finish reading... this is a really bad way of solving the problem, ugly hack for now.
+        Thread.sleep(1000)
+//        outputThread.stop()
+//        redirectStdInputThread.stop()
 
         // clean up after ourselves
         context.docker.removeContainerCmd(dockerContainer.id)

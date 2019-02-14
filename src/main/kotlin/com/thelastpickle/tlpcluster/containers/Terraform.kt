@@ -16,27 +16,33 @@ class Terraform(val context: Context) {
     }
 
     fun init() : Result<String> {
-        return docker.runContainer(dockerImageTag, mutableListOf("init", "/local"), volumeMapping, localDirectory)
+        return execute("init")
     }
 
     fun up() : Result<String> {
-        return docker.runContainer(dockerImageTag, mutableListOf("apply", "/local"), volumeMapping, localDirectory)
+        return execute("apply")
     }
 
     fun down() : Result<String> {
-        return docker.runContainer(dockerImageTag, mutableListOf("destroy", "/local"), volumeMapping, localDirectory)
+        return execute("destroy")
     }
 
     fun cassandraIps(): Result<String> {
-        return docker.runContainer(dockerImageTag, mutableListOf("output", "cassandra_ips"), volumeMapping, localDirectory)
+        return execute("output", "cassandra_ips")
     }
 
     fun cassandraInternalIps(): Result<String> {
-        return docker.runContainer(dockerImageTag, mutableListOf("output", "cassandra_internal_ips"), volumeMapping, localDirectory)
+        return execute("output", "cassandra_internal_ips")
     }
 
     fun stressIps() : Result<String> {
-        return docker.runContainer(dockerImageTag, mutableListOf("output", "stress_ips"), volumeMapping, localDirectory)
+        return execute("output", "stress_ips")
+    }
+
+    private fun execute(vararg command: String) : Result<String> {
+        val args = command.toMutableList()
+        return docker.runContainer(dockerImageTag, args, volumeMapping, localDirectory)
+
     }
 
 }
