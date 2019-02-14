@@ -18,7 +18,8 @@ class Clean : ICommand {
                 "docker-compose.yml",
                 "Dockerfile",
                 "DockerfileCassandra",
-                "DockerfileSSH"
+                "DockerfileSSH",
+                "parallel_ssh.sh"
                 )
 
         for(f in toDelete) {

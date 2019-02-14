@@ -9,6 +9,7 @@ import com.github.dockerjava.core.DockerClientBuilder
 import com.github.dockerjava.netty.NettyDockerCmdExecFactory
 import com.thelastpickle.tlpcluster.configuration.User
 import java.io.File
+import java.nio.file.Files
 
 data class Context(val tlpclusterUserDirectory: File,
                    val cassandraRepo: Cassandra) {
@@ -54,4 +55,15 @@ data class Context(val tlpclusterUserDirectory: File,
     }
 
     val cwdPath = System.getProperty("user.dir")
+
+    companion object {
+        /**
+         * Used only for testing
+         */
+        fun testContext() : Context {
+            var testTempDirectory = Files.createTempDirectory("tlpcluster")
+            var testTempDirectoryCassandra = Files.createTempDirectory("tlpcluster")
+            return Context(testTempDirectory.toFile(), Cassandra(testTempDirectoryCassandra.toFile()))
+        }
+    }
 }

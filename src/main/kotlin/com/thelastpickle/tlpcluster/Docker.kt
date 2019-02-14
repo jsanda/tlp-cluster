@@ -125,7 +125,8 @@ class Docker(val context: Context) {
                 .withFollowStream(true)
                 .exec(object : AttachContainerResultCallback() {
                     override fun onNext(item: Frame?) {
-                        if(item != null) {
+                        // should only include standard out - please fix me
+                        if(item != null && item.streamType.name.equals("STDOUT")) {
                             source.write(item.payload)
                         }
                     }
