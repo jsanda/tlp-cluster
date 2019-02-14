@@ -1,17 +1,13 @@
 package com.thelastpickle.tlpcluster.commands
 
-import com.beust.jcommander.Parameter
 import com.beust.jcommander.Parameters
 import com.thelastpickle.tlpcluster.Context
-import com.thelastpickle.tlpcluster.DockerCompose
 import com.thelastpickle.tlpcluster.containers.Terraform
-import sun.misc.IOUtils
 import java.io.File
 
 @Parameters(commandDescription = "Starts instances")
 class Up(val context: Context) : ICommand {
     override fun execute() {
-
         // we have to list both the variable files explicitly here
         // even though we have a terraform.tvars
         // we need the local one to apply at the highest priority
@@ -19,15 +15,24 @@ class Up(val context: Context) : ICommand {
         // so we have to explicitly specify the local one to ensure it gets
         // priority over user
         val terraform = Terraform(context)
-        terraform.up()
 
-        val publicIps = terraform.cassandraIps()
-        val privateIps = terraform.cassandraInternalIps()
-        val stressIps = terraform.stressIps()
+        terraform.up().onFailure {
+            println(it.message)
+            println("Some resources may have been unsuccessfully provisioned.")
+            return
+        }
 
-        File("hosts.txt").writeText(convertToUsefulFile(publicIps))
-        File("seeds.txt").writeText(convertToUsefulFile(privateIps.lines().take(3).joinToString("\n")))
-        File("stress_ips.txt").writeText(convertToUsefulFile(stressIps))
+        terraform.cassandraIps().onSuccess {
+            File("hosts.txt").writeText(convertToUsefulFile(it))
+        }
+
+        terraform.cassandraInternalIps().onSuccess {
+            File("seeds.txt").writeText(convertToUsefulFile(it.lines().take(3).joinToString("\n")))
+        }
+
+        terraform.stressIps().onSuccess {
+            File("stress_ips.txt").writeText(it)
+        }
 
         println("""Instances have been provisioned.  Cassandra hosts are located in hosts.txt.
 Seeds are using internal IPs and are located in seeds.txt.

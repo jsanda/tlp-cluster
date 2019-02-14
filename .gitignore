@@ -16,7 +16,7 @@
 /build_cassandra.sh
 /copy_provisioning_resources.sh
 /create_provisioning_resources.sh
-/provision_cassandra.sh
+/parallel_ssh.sh
 /docker-compose.yml
 /hosts.txt
 /known_hosts

@@ -53,6 +53,5 @@ data class Context(val tlpclusterUserDirectory: File,
                 .build()
     }
 
-
-
+    val cwdPath = System.getProperty("user.dir")
 }

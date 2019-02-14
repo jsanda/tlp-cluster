@@ -2,15 +2,6 @@ version: "3.0"
 
 services:
 
-  pssh:
-    build:
-      dockerfile: DockerfileSSH
-      context: "."
-    volumes:
-      - "${SSH_KEY_PATH}:/root/.ssh/aws-private-key:ro"
-      - "${PWD}:/local"
-    working_dir: "/local"
-
   build-cassandra:
     build:
       dockerfile: DockerfileCassandra
