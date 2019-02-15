@@ -82,7 +82,6 @@ class Docker(val context: Context) {
 
         println("Starting $imageTag container")
 
-        context.docker.startContainerCmd(dockerContainer.id).exec()
 
         var containerState : InspectContainerResponse.ContainerState
 
@@ -145,6 +144,8 @@ class Docker(val context: Context) {
                     }
                 })
 
+        context.docker.startContainerCmd(dockerContainer.id).exec()
+        
         // stay here till the container stops
         do {
             Thread.sleep(1000)
