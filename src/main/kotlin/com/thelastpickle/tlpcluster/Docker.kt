@@ -35,12 +35,14 @@ class Docker(val context: Context) {
 
             override fun onComplete() {
                 println("$imageTag docker container created.")
+                super.onComplete()
             }
 
             override fun onNext(item: BuildResponseItem?) {
                 if(item != null) {
                     print(item.stream)
                 }
+                super.onNext(item)
             }
 
 
