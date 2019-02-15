@@ -1,17 +1,13 @@
 package com.thelastpickle.tlpcluster
 
 import com.github.dockerjava.api.command.InspectContainerResponse
-import com.github.dockerjava.api.model.AccessMode
-import com.github.dockerjava.api.model.Bind
-import com.github.dockerjava.api.model.Frame
-import com.github.dockerjava.api.model.Volume
+import com.github.dockerjava.api.model.*
 import com.github.dockerjava.core.command.AttachContainerResultCallback
 import com.github.dockerjava.core.command.BuildImageResultCallback
-import org.apache.logging.log4j.kotlin.logger
+import java.io.Closeable
 import java.io.PipedOutputStream
 import java.io.PipedInputStream
 import kotlin.concurrent.thread
-
 
 
 class Docker(val context: Context) {
@@ -28,7 +24,27 @@ class Docker(val context: Context) {
         // removed after the tlp-cluster command completes.
         val dockerfileStream = object {}.javaClass.getResourceAsStream("commands/origin/$dockerfileName")
         val dockerfile = Utils.inputstreamToTempFile(dockerfileStream, dockerfileName + "_", "", context.cwdPath)
-        val dockerBuildCallback = BuildImageResultCallback()
+
+        val dockerBuildCallback = object : BuildImageResultCallback() {
+
+            override fun onStart(stream: Closeable?) {
+                if(stream != null) {
+                    println("Creating $imageTag build environment, this may take a minute...")
+                }
+            }
+
+            override fun onComplete() {
+                println("$imageTag docker container created.")
+            }
+
+            override fun onNext(item: BuildResponseItem?) {
+                if(item != null) {
+                    print(item.stream)
+                }
+            }
+
+
+        }
 
         println("Building image $imageTag")
 
