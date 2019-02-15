@@ -40,6 +40,8 @@ class BuildCassandra(val context: Context)  : ICommand {
 
         // create the container
         cassandra.build()
+        println("Starting cassandra build process")
+        
         cassandra.start(location.absolutePath, name)
 
         /*

@@ -8,7 +8,7 @@ import java.io.File
 class CassandraBuildJava8(val context: Context) {
 
     private val docker = Docker(context)
-    private val dockerImageTag = "thelastpickle/tlp-cluster java8"
+    private val dockerImageTag = "thelastpickle/tlp-cluster-java8"
 
     val home = File(System.getProperty("user.home"))
     val builds = File(home, ".tlp-cluster/builds/")
@@ -32,6 +32,8 @@ class CassandraBuildJava8(val context: Context) {
                 Triple(mavenCache, "/root/.m2/", AccessMode.rw)
 
         )
+
+        println("Volumes: $volumes")
 
         return docker.runContainer(
                 dockerImageTag,

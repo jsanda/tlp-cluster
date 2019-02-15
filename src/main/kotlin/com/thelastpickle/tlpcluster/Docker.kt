@@ -22,7 +22,7 @@ class Docker(val context: Context) {
         // need to copy the dockerfile in the JAR resources to a location it can read from.
         // To do this we will make a temporary file in the working directory that is
         // removed after the tlp-cluster command completes.
-        val dockerfileStream = object {}.javaClass.getResourceAsStream("commands/dockerfiles/$dockerfileName")
+        val dockerfileStream = this.javaClass.getResourceAsStream("/com/thelastpickle/tlpcluster/containers/$dockerfileName")
         val dockerfile = Utils.inputstreamToTempFile(dockerfileStream, dockerfileName + "_", "", context.cwdPath)
 
         val dockerBuildCallback = object : BuildImageResultCallback() {

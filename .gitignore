@@ -28,3 +28,4 @@
 /terraform.tfvars
 /terraform.tfstate.backup
 /DockerfileSSH*
+/DockerfileCassandra_*
