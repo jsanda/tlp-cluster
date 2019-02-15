@@ -4,6 +4,7 @@ import com.beust.jcommander.Parameter
 import com.beust.jcommander.Parameters
 import com.thelastpickle.tlpcluster.Cassandra
 import com.thelastpickle.tlpcluster.Context
+import com.thelastpickle.tlpcluster.containers.CassandraBuildJava8
 import java.io.File
 
 @Parameters(commandDescription = "Build Cassandra (either tag or custom dir)")
@@ -35,7 +36,20 @@ class BuildCassandra(val context: Context)  : ICommand {
 
         context.createBuildSkeleton(name)
 
+        val cassandra = CassandraBuildJava8(context)
 
-        Cassandra.build(name, location)
+        // create the container
+        cassandra.build()
+        cassandra.start(location.absolutePath, name)
+
+        /*
+                val dc = DockerCompose(inheritIO = true)
+
+            return dc
+                    .setBuildName(name)
+                    .setCassandraDir(location.absolutePath)
+                    .run("build-cassandra", arrayOf())
+         */
+//        Cassandra.build(name, location)
     }
 }
