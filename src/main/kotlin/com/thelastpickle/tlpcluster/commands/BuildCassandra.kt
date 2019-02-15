@@ -2,7 +2,6 @@ package com.thelastpickle.tlpcluster.commands
 
 import com.beust.jcommander.Parameter
 import com.beust.jcommander.Parameters
-import com.thelastpickle.tlpcluster.Cassandra
 import com.thelastpickle.tlpcluster.Context
 import com.thelastpickle.tlpcluster.containers.CassandraBuildJava8
 import java.io.File
@@ -20,9 +19,6 @@ class BuildCassandra(val context: Context)  : ICommand {
 
         val tmp = File(pathOrVersion)
 
-        // does the build already exist?  if so, bail out
-
-
         // is this a directory?
         val location = if(tmp.exists()) {
             tmp
@@ -33,25 +29,14 @@ class BuildCassandra(val context: Context)  : ICommand {
             context.cassandraRepo.gitLocation
         }
 
-
         context.createBuildSkeleton(name)
 
-        val cassandra = CassandraBuildJava8(context)
+        val cassandraBuilder = CassandraBuildJava8(context)
 
         // create the container
-        cassandra.build()
+        cassandraBuilder.buildContainer()
         println("Starting cassandra build process")
         
-        cassandra.start(location.absolutePath, name)
-
-        /*
-                val dc = DockerCompose(inheritIO = true)
-
-            return dc
-                    .setBuildName(name)
-                    .setCassandraDir(location.absolutePath)
-                    .run("build-cassandra", arrayOf())
-         */
-//        Cassandra.build(name, location)
+        cassandraBuilder.runBuild(location.absolutePath, name)
     }
 }

@@ -10,14 +10,10 @@
 .jira-url
 /test/
 /.terraform/
-/Dockerfile
-/DockerfileCassandra
-/DockerfileSSH
-/build_cassandra.sh
-/copy_provisioning_resources.sh
+/build_cassandra.sh*
+/copy_provisioning_resources.sh*
 /create_provisioning_resources.sh
-/parallel_ssh.sh
-/docker-compose.yml
+/parallel_ssh.sh*
 /hosts.txt
 /known_hosts
 /provisioning/

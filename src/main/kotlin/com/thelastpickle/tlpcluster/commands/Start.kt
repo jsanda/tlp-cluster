@@ -21,7 +21,7 @@ class Start(val context: Context) : ICommand {
         println("Starting all nodes.")
         val parallelSsh = Pssh(context, sshKey)
 
-        parallelSsh.build()
+        parallelSsh.buildContainer()
         parallelSsh.startService("cassandra")
     }
 }

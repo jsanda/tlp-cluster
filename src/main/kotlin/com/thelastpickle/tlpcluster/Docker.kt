@@ -10,31 +10,31 @@ import java.io.PipedInputStream
 import kotlin.concurrent.thread
 
 
+data class VolumeMapping(val source: String, val destination: String, val mode: AccessMode)
+
+
 class Docker(val context: Context) {
     init {
 
     }
 
     fun buildContainer(dockerfileName : String, imageTag: String) : String {
-
         // The java-docker library we use can build an image from only a Dockerfile.
         // That is, there is no programmatic way to build an image using the API. So, we
         // need to copy the dockerfile in the JAR resources to a location it can read from.
         // To do this we will make a temporary file in the working directory that is
         // removed after the tlp-cluster command completes.
-        val dockerfileStream = this.javaClass.getResourceAsStream("/com/thelastpickle/tlpcluster/containers/$dockerfileName")
-        val dockerfile = Utils.inputstreamToTempFile(dockerfileStream, dockerfileName + "_", "", context.cwdPath)
+        val dockerfile = Utils.resourceToTempFile("containers/$dockerfileName", context.cwdPath)
 
         val dockerBuildCallback = object : BuildImageResultCallback() {
-
             override fun onStart(stream: Closeable?) {
                 if(stream != null) {
-                    println("Creating $imageTag build environment, this may take a minute...")
+                    println("Building container image $imageTag, this may take a minute...")
                 }
             }
 
             override fun onComplete() {
-                println("$imageTag docker container created.")
+                println("Finished building container image $imageTag")
                 super.onComplete()
             }
 
@@ -44,11 +44,7 @@ class Docker(val context: Context) {
                 }
                 super.onNext(item)
             }
-
-
         }
-
-        println("Building image $imageTag")
 
         context.docker.buildImageCmd()
                 .withDockerfile(dockerfile)
@@ -57,7 +53,7 @@ class Docker(val context: Context) {
 
         val imageId = dockerBuildCallback.awaitImageId()
 
-        println("Finished building image $imageTag ($imageId)")
+        println("Container image id: ($imageId)")
 
         return imageId
     }
@@ -65,7 +61,7 @@ class Docker(val context: Context) {
     fun runContainer(
             imageTag: String,
             command: MutableList<String>,
-            volumes: MutableList<Triple<String, String, AccessMode>>, // Triple: source, target , mode
+            volumes: MutableList<VolumeMapping>, // Triple: source, target , mode
             workingDirectory : String) : Result<String> {
 
         val capturedStdOut = StringBuilder()
@@ -80,9 +76,9 @@ class Docker(val context: Context) {
             val bindesList = mutableListOf<Bind>()
 
             volumes.forEach{
-                val containerVolume = Volume(it.second)
+                val containerVolume = Volume(it.destination)
                 volumesList.add(containerVolume)
-                bindesList.add(Bind(it.first, containerVolume, it.third))
+                bindesList.add(Bind(it.source, containerVolume, it.mode))
             }
 
             dockerCommandBuilder
@@ -99,7 +95,6 @@ class Docker(val context: Context) {
         val dockerContainer = dockerCommandBuilder.exec()
 
         println("Starting $imageTag container")
-
 
         var containerState : InspectContainerResponse.ContainerState
 
@@ -121,22 +116,16 @@ class Docker(val context: Context) {
         // We put this on a different thread because I have no idea what input it's going to ask for
         // and the operations are blocking
         val outputThread = thread {
-            println("Reading lines")
             do {
                 val message = stdOutReader.readLine()
                 println("STDOUT:$message")
-//                log.debug { "Received from stdout: $message" }
-
-
                 capturedStdOut.appendln(message)
             } while(true)
         }
 
-
         val redirectStdInputThread = thread {
             while(true) {
                 val line = stdIn.readLine() + "\n"
-                println("Sending $line to container")
                 stdInputPipe.write(line.toByteArray())
             }
         }
@@ -174,8 +163,6 @@ class Docker(val context: Context) {
 
         // let the threads finish reading... this is a really bad way of solving the problem, ugly hack for now.
         Thread.sleep(1000)
-//        outputThread.stop()
-//        redirectStdInputThread.stop()
 
         // clean up after ourselves
         context.docker.removeContainerCmd(dockerContainer.id)

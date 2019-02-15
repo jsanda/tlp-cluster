@@ -32,7 +32,7 @@ class Install(val context: Context) : ICommand {
         val retryMessage = " This could be a transient error; try rerunning the install command."
         val parallelSsh = Pssh(context, sshKey)
 
-        parallelSsh.build()
+        parallelSsh.buildContainer()
 
         // we only want to run the install if the copy was successful
         parallelSsh.copyProvisioningResources().fold(
